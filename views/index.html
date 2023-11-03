@@ -43,7 +43,7 @@
                 <div id="notifications" style="overflow-y:scroll; overflow-x:hidden; height:400px;"></div>
             </div>
 
-            <div hx-ext="ws" ws-connect="wss:localhost:1323/ws/{{index . `path`}}">
+            <div hx-ext="ws" id="ws-connect" >
             <form id="form" 
                 hx-on::ws-after-send="this.reset(); scrollDiv();"
                 ws-send>
@@ -63,6 +63,19 @@
     </div>
 
     <script>
+        var wsConnect = document.getElementById('ws-connect')
+        
+        var loc = window.location;
+        var uri = 'ws:';
+
+        if (loc.protocol === 'https:') {
+          uri = 'wss:';
+        }
+        uri += loc.host;
+        uri += loc.pathname + '/ws';
+
+        wsConnect.setAttribute('ws-connect', uri)
+        
         let name = ""
         while (!name) {
             name = prompt("Enter your name:")

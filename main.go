@@ -3,16 +3,14 @@ package main
 import (
 	"avengers-chat/controller"
 	"avengers-chat/handler"
+	"fmt"
 	"html/template"
 	"io"
-	"log"
-	"net/http"
 	"os"
 
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"golang.org/x/crypto/acme/autocert"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type Template struct {
@@ -25,13 +23,8 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 
 func main() {
 	e := echo.New()
-	e.AutoTLSManager.Cache = autocert.DirCache("/var/www/.cache")
-	e.Pre(middleware.HTTPSRedirect())
-
-
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("views/*.html")),
@@ -43,12 +36,9 @@ func main() {
 	e.GET("/crime", handler.CrimesChatRoom)
 	e.GET("/random", handler.RandomChatRoom)
 
-	e.GET("/ws/inventory", controller.InventoryWebsocket)
-	e.GET("/ws/crime", controller.CrimeWebsocket)
-	e.GET("/ws/random", controller.RandomWebsocket)
+	e.GET("inventory/ws", controller.InventoryWebsocket)
+	e.GET("crime/ws", controller.CrimeWebsocket)
+	e.GET("random/ws", controller.RandomWebsocket)
 
-	// e.Logger.Fatal(e.Start(os.Getenv("PORT")))
-	if err := e.StartTLS(os.Getenv("PORT"), []byte(os.Getenv("TSL_CERT")), []byte(os.Getenv("TSL_KEY"))); err != http.ErrServerClosed {
-		log.Fatal(err)
-	}
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", os.Getenv("PORT"))))
 }
